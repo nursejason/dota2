@@ -43,3 +43,10 @@ This API driven application is intended to use public information to assist in t
 
 ##### Step ??. Advanced team composition
 - Ex. User desires a pushing team, and therefore the team comp allows for additional pushing in order to become balanced.
+
+##### Step ??. Search Engine Optimization
+
+##### Step ??. Monetize
+
+### Questions:
+- Where is the logic for this? Is it all front end? Easy to steal. Submission API driven? Then what about the app?
