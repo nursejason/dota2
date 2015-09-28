@@ -30,7 +30,16 @@ This API driven application is intended to use public information to assist in t
 - Recommended item use against enemy heroes.
 - Recommended item use that goes well with your team.
 
+##### Step ??. Front end
+- Create the UI
+
+##### Step ??. Mobile platform
+
 ##### Step ??. Input your team
+
+##### Step ??. Sorting and filtering
+- Be able to filter and sort by ranged, carry, etc based on role required.
+- Be able to search for hero name to find counter rating
 
 ##### Step ??. Advanced team composition
 - Ex. User desires a pushing team, and therefore the team comp allows for additional pushing in order to become balanced.
