@@ -3,13 +3,15 @@ A simple script to call the Steam API, given a sequence number, to retrieve
 match history and save it to a database.
 """
 import requests
+# TODO Add logging
 
 API_KEY = 'E3973E62088C5C78E02E446D4A8491A8'
 STEAM_URL = 'https://api.steampowered.com/IDOTA2Match_570/'
 METHOD_URL = 'GetMatchHistoryBySequenceNum/v0001/'
+VALID_LOBBY_TYPES = [0, 6, 7]
 def main():
     data = query_steam('1626847481')
-    # TODO Gather data
+    print process_data(data)
     # TODO Save to DB
 
 def query_steam(sequence_num):
@@ -27,37 +29,59 @@ def query_steam(sequence_num):
                         % response.status_code, response.text)
 
 def process_data(data):
-    for match in data.matches:
+    """
+    Args: data object from Steam API.
+    returns: list_winning_heroes, list_losing_heroes from all matches in call.
+    """
+    result = None
+    if data['result']['status'] == 1:
+        result = data['result']
+    else:
+        raise Exception('Invalid data status')
+
+    all_winning_heroes = []
+    all_losing_heroes = []
+    for match in result['matches']:
+        # Only concerned with some lobby types. (This could be an issue)
+        if match['lobby_type'] not in VALID_LOBBY_TYPES:
+            print "Invalid Lobby Type: %s" % match['lobby_type']
+            continue
+
+        # Matches shorter than 15 minutes have some sort of monkey business.
+        if match['duration'] < 900:
+            print "Too short match duration"
+            continue
+
         # Do not process match if it has bots
-        if match.human_players == 10:
-            process_match(match)
+        if match['human_players'] == 10:
+            winning_heroes, losing_heroes = process_match(match)
+            all_winning_heroes.extend(winning_heroes)
+            all_losing_heroes.extend(losing_heroes)
         else:
             continue
-        # TODO Lobby Type?
-        # TODO Cluster?
+
+    return all_winning_heroes, all_losing_heroes
 
 def process_match(match):
-    winning_heroes = {}
-    losing_heroes = {}
-    for player in match.players:
-        if match.radiant_win:
-            # winning heroes player slot 0 < X < 5
-            # losing heroes player slot > 5
-        # winning_heroes = radiant
-        # losing_heroes = dire
-            pass
-    else:
-        # winning heroes player slot > 5
-        # losing heroes player slot 0 < X < 5
-        # winning_heroes = dire
-        # losing_heroes = radiant
-        pass
+    """
+    Args: match object
+    Returns:
+        winning_heroes, losing_heroes: lists that contain the hero_id's of
+            the heroes respective to the particular list in refernece.
+    """
+    winning_heroes = []
+    losing_heroes = []
+    radiant_win = match['radiant_win']
+    for player in match['players']:
+        if (radiant_win and player['player_slot'] < 5) or \
+           (not radiant_win and player['player_slot'] >= 5):
+            winning_heroes.append(player['hero_id'])
 
-def process_players():
-    pass
+        elif radiant_win and player['player_slot'] >= 5 or \
+           (not radiant_win and player['player_slot'] < 5):
+            losing_heroes.append(player['hero_id'])
 
-def process_player():
-    pass
+    return winning_heroes, losing_heroes
 
 if __name__ == '__main__':
     main()
