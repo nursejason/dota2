@@ -1,6 +1,6 @@
 #!/usr/bin/python2.7
 """ SQLAlchemy Relational DB Functions"""
-from sqlalchemy import create_engine
+import sqlalchemy
 
 CREATE_MATCH_HISTORY_QUERY = """
 CREATE TABLE
@@ -11,7 +11,6 @@ CREATE TABLE
     )
 """
 
-# TODO Does this table need an index?
 CREATE_HERO_MATCHES_QUERY = """
 CREATE TABLE
     hero_matches
@@ -31,11 +30,48 @@ CREATE TABLE
     )
 """
 
+CREATE_WINNING_HERO_INDEX = """
+CREATE INDEX winning_hero_%s
+ON hero_matches (winning_hero_%s)
+"""
+
+CREATE_LOSING_HERO_INDEX = """
+CREATE INDEX losing_hero_%s
+ON hero_matches (losing_hero_%s)
+"""
+
+CREATE_SEQUENCE_NUM_TABLE = """
+CREATE TABLE
+    most_recent_sequence_num
+    (
+        sequence_num varchar(12) PRIMARY KEY
+    )
+"""
+
+INSERT_START_SEQUENCE_NUM = """
+INSERT INTO most_recent_sequence_num
+    ('sequence_num')
+VALUES ('1626847481')
+"""
+
 def main():
-    engine = create_engine('sqlite:///dota.db', echo=False)
+    engine = sqlalchemy.create_engine('sqlite:///dota.db', echo=False)
     conn = engine.connect()
-    conn.execute(CREATE_MATCH_HISTORY_QUERY)
-    conn.execute(CREATE_HERO_MATCHES_QUERY)
+    queries = [
+        CREATE_MATCH_HISTORY_QUERY,
+        CREATE_HERO_MATCHES_QUERY,
+        CREATE_SEQUENCE_NUM_TABLE,
+        INSERT_START_SEQUENCE_NUM
+    ]
+    for i in range(1, 6):
+        queries.append(CREATE_WINNING_HERO_INDEX % (i, i))
+        queries.append(CREATE_LOSING_HERO_INDEX % (i, i))
+
+    for query in queries:
+        try:
+            conn.execute(query)
+        except sqlalchemy.exc.OperationalError, exception:
+            print 'Exception executing sql query. %s' % exception
 
 if __name__ == "__main__":
     main()
