@@ -5,9 +5,6 @@ match history and save it to a database.
 """
 
 """ TODO Board
-1. Add logging
-2. Continuous running
-<- This file should be done!
 -> Begin Grabbing Basic Hero Data
 3. DB For all heroes: name, id, localized_name, win%
 4. Script to save hero data to DB
@@ -42,24 +39,36 @@ different weights? Or do all heroes have equal impact on the game? I think all
 have equal impact.
 """
 
-import logging # TODO
+import logging
 import requests
 from sqlalchemy import create_engine
 
-STARTING_SEQUENCE = '1626847481'
 API_KEY = 'E3973E62088C5C78E02E446D4A8491A8'
 STEAM_URL = 'https://api.steampowered.com/IDOTA2Match_570/'
 METHOD_URL = 'GetMatchHistoryBySequenceNum/v0001/'
 VALID_LOBBY_TYPES = [0, 6, 7]
 
 def main():
-    raw_data = query_steam(STARTING_SEQUENCE)
-    match_relations, hero_relations = process_data(raw_data)
-    save_hero_data(hero_relations)
-    save_match_data(match_relations)
-    # TODO Update sequence num
+    """
+    1. Grab the most recent sequence number in the table.
+    2. Query Steam using the most recent sequence number
+    3. Process match and hero relation data
+    4. Save match and hero data to DB.
+    5. Update sequence number.
+    """
+    while True:
+        sequence_num = get_sequence_num()
+        raw_data = query_steam(sequence_num)
+
+        match_relations, hero_relations = process_data(raw_data)
+        save_hero_data(hero_relations)
+        save_match_data(match_relations)
+
+        latest_sequence_num = retrieve_sequence_num(raw_data)
+        save_sequence_number(latest_sequence_num)
 
 def query_steam(sequence_num):
+    logging.info('Begin Steam query')
     payload = {
         'key': API_KEY,
         'start_at_match_seq_num': sequence_num
@@ -67,8 +76,11 @@ def query_steam(sequence_num):
     url = STEAM_URL + METHOD_URL
     response = requests.get(url, params=payload)
     if response.status_code == 200:
+        logging.info('Successful query to Steam API')
         return response.json()
     else:
+        logging.error('Error calling steam API. %s:%s', response.status_code,
+                      response.text)
         raise Exception('Error retrieving data from Steam API. Status %s, %s'
                         % response.status_code, response.text)
 
@@ -77,6 +89,7 @@ def process_data(data):
     Args: data object from Steam API.
     returns: list_winning_heroes, list_losing_heroes from all matches in call.
     """
+    logging.info('Begin processing Steam data.')
     result = None
     if data['result']['status'] == 1:
         result = data['result']
@@ -104,6 +117,8 @@ def process_data(data):
         else:
             continue
 
+    logging.info('Match relations: %s', match_relations)
+    logging.info('Hero relations: %s', hero_relations)
     return match_relations, hero_relations
 
 def process_match(match):
@@ -118,6 +133,8 @@ def process_match(match):
     hero_data = get_hero_data(match)
     hero_data['match_num'] = match['match_id']
 
+    logging.info('Match data: %s', match_data)
+    logging.info('Hero data: %s', hero_data)
     return match_data, hero_data
 
 
@@ -160,7 +177,11 @@ def is_winning_player(radiant_win, player_slot):
     else:
         raise Exception('Conditions for is_winning_player are invalid')
 
+def retrieve_sequence_num(row_data):
+    return ''
+
 def save_hero_data(hero_data):
+    logging.info('Attempt to hero data to DB.')
     insert_query = """
         INSERT INTO hero_matches
             ('winning_hero_1', 'winning_hero_2', 'winning_hero_3',
@@ -176,9 +197,10 @@ def save_hero_data(hero_data):
 
     for value in hero_data:
         insert_query += values % value + ', '
-    _save_data(insert_query[:-2])
+    _execute_sql(insert_query[:-2])
 
 def save_match_data(match_data):
+    logging.info('Attempt to save match data to DB.')
     insert_query = """
         INSERT INTO 'match_history'
             ('match_num', 'sequence_num')
@@ -187,12 +209,30 @@ def save_match_data(match_data):
     values = "('%(match_num)s', '%(sequence_num)s')"
     for value in match_data:
         insert_query += values % value + ', '
-    _save_data(insert_query[:-2])
+    _execute_sql(insert_query[:-2])
 
-def _save_data(insert_query):
+def get_sequence_num():
+    logging.info('Attempt to query for most recent sequence number.')
+    select = 'SELECT * FROM most_recent_sequence_num'
+    row = _execute_sql(select).fetchone()
+    return row.sequence_num
+
+def save_sequence_number(latest_sequence_num):
+    logging.info('Attempt to save most recent sequence num to db')
+    query = """
+        INSERT INTO most_recent_sequence_num
+            ('sequence_num')
+        VALUES ('%s')
+    """ % latest_sequence_num
+    _execute_sql(query)
+
+def _execute_sql(query):
     engine = create_engine('sqlite:///dota.db', echo=False)
     connection = engine.connect()
-    connection.execute(insert_query)
+    result = connection.execute(query)
+    logging.info('Successfully ran query.')
+    return result
 
 if __name__ == '__main__':
+    logging.basicConfig(filename='history.log', level=logging.INFO)
     main()
