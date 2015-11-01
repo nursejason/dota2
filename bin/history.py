@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin python2.7
 """
 A simple script to call the Steam API, given a sequence number, to retrieve
 match history and save it to a database.
@@ -40,12 +40,15 @@ have equal impact.
 """
 
 import logging
-import requests
+import os
+import sys
+import time
 from sqlalchemy import create_engine
 
-API_KEY = 'E3973E62088C5C78E02E446D4A8491A8'
-STEAM_URL = 'https://api.steampowered.com/IDOTA2Match_570/'
-METHOD_URL = 'GetMatchHistoryBySequenceNum/v0001/'
+sys.path.insert(0, os.path.realpath(os.path.dirname(__file__)) + '/../lib')
+
+from interactors.api_interactors import GetMatchHistoryRequest
+
 VALID_LOBBY_TYPES = [0, 6, 7]
 
 def main():
@@ -56,9 +59,10 @@ def main():
     4. Save match and hero data to DB.
     5. Update sequence number.
     """
+    history = GetMatchHistoryRequest(logging)
     while True:
         sequence_num = get_sequence_num()
-        raw_data = query_steam(sequence_num)
+        raw_data = query_steam(history, sequence_num)
 
         match_relations, hero_relations = process_data(raw_data)
         save_hero_data(hero_relations)
@@ -66,23 +70,11 @@ def main():
 
         latest_sequence_num = retrieve_sequence_num(raw_data)
         save_sequence_number(latest_sequence_num)
+        time.sleep(60)
 
-def query_steam(sequence_num):
+def query_steam(request_adapter, sequence_num):
     logging.info('Begin Steam query')
-    payload = {
-        'key': API_KEY,
-        'start_at_match_seq_num': sequence_num
-    }
-    url = STEAM_URL + METHOD_URL
-    response = requests.get(url, params=payload)
-    if response.status_code == 200:
-        logging.info('Successful query to Steam API')
-        return response.json()
-    else:
-        logging.error('Error calling steam API. %s:%s', response.status_code,
-                      response.text)
-        raise Exception('Error retrieving data from Steam API. Status %s, %s'
-                        % response.status_code, response.text)
+    return request_adapter.query_api(sequence_num)
 
 def process_data(data):
     """
