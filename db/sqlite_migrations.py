@@ -54,6 +54,15 @@ INSERT INTO most_recent_sequence_num
 VALUES ('1626847481')
 """
 
+CREATE_HEROES_TABLE = """
+CREATE TABLE
+    heroes_table
+    (
+        id int PRIMARY KEY,
+        name varchar(24)
+    )
+"""
+
 def main():
     engine = sqlalchemy.create_engine('sqlite:///dota.db', echo=False)
     conn = engine.connect()
