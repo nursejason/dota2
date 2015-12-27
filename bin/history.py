@@ -4,6 +4,9 @@ A simple script to call the Steam API, given a sequence number, to retrieve
 match history and save it to a database.
 """
 
+# TODO Stop pulling data if date == today
+# TODO incomplete game logic
+# TODO Retry logic
 """ TODO Board
 -> Begin Grabbing Basic Hero Data
 3. DB For all heroes: name, id, localized_name, win%
@@ -48,6 +51,7 @@ from sqlalchemy import create_engine
 sys.path.insert(0, os.path.realpath(os.path.dirname(__file__)) + '/../lib')
 
 from interactors.api_interactors import GetMatchHistoryRequest
+from interactors.sqlite_interactors import MatchSqlInteractor
 
 VALID_LOBBY_TYPES = [0, 6, 7]
 
