@@ -4,7 +4,23 @@ This API driven application is intended to use public information to assist in t
 
 ##### Step 1. Basic counterpicking
 - Enter in any number of heroes and retrieve counterpick information.
-  - Utilize basic counterpick information
+  - Match data needs to be stored with all ten heroes and winning team.
+  - Hero data needs to be stored with all heroes, names, and id's
+  - To generate win-loss-relations, use match data stored from above, iterating through each hero, and querying for all matches with that hero. Iterate through results, and write to DB. Ignore processing for heroes with ID < current ID, as that ID would have already been processed.
+  - A simple API will need to be created in order for the front end to get win-loss-relational data.
+  - Finally a UI needs to be created in order for users to consume the service.
+
+- Includes:
+  - 1. Script to store match data. Runs every 30s
+    - history.py
+  - 2. Script to store hero data. Runs every day
+    - hero_dump.py
+  - 3. Script to generate win-loss-relations. Runs every day
+  - 4. Generate API to pull win-loss-relations
+  - 5. Create UI Component
+
+- Complete:
+  - 1, but needs refactoring
 
 ##### Step 2. Team composition
 - Pull hero information from DotA website. Balance a team based on that information.
