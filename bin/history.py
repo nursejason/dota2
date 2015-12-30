@@ -46,7 +46,6 @@ import logging
 import os
 import sys
 import time
-from sqlalchemy import create_engine
 
 sys.path.insert(0, os.path.realpath(os.path.dirname(__file__)) + '/../lib')
 
@@ -77,7 +76,7 @@ def main():
         time.sleep(60)
 
 def query_steam(request_adapter, sequence_num):
-    logging.info('Begin Steam query')
+    logging.info('Querying Steam VIA Adapter.')
     return request_adapter.query_api(sequence_num)
 
 def process_data(data):
@@ -113,8 +112,6 @@ def process_data(data):
         else:
             continue
 
-    logging.info('Match relations: %s', match_relations)
-    logging.info('Hero relations: %s', hero_relations)
     return match_relations, hero_relations
 
 def process_match(match):
@@ -124,16 +121,15 @@ def process_match(match):
         match_data ~> Dict containing match_num and sequence_num
         hero_data ~> Dict containing hero 1-5 win and hero 1-5 loss + match_num
     """
+    # TODO May need reworking
     match_data = {'match_num': match['match_id'],
                   'sequence_num': match['match_seq_num']}
     hero_data = get_hero_data(match)
     hero_data['match_num'] = match['match_id']
 
-    logging.info('Match data: %s', match_data)
-    logging.info('Hero data: %s', hero_data)
+    logging.debug('Match data: %s', match_data)
+    logging.debug('Hero data: %s', hero_data)
     return match_data, hero_data
-
-
 
 def get_hero_data(match):
     """
@@ -142,92 +138,55 @@ def get_hero_data(match):
         hero_data ~> Dict containing hero 1-5 win and hero 1-5 loss + match_num
     """
     hero_data = {}
-    win_key = 'winning_hero_%s'
-    lose_key = 'losing_hero_%s'
-    idx = 1
     for player in match['players']:
-        # Reset index for other set of keys
-        if idx > 5:
-            idx = 1
-
-        if is_winning_player(match['radiant_win'], player['player_slot']):
-            hero_data[win_key % idx] = player['hero_id']
-        else:
-            hero_data[lose_key % idx] = player['hero_id']
-        idx += 1
+        pass # TODO
+        # TODO Create a list of dictionaries
+        # hero_1 = x
+        # hero_2 = y
+        # win/loss bool
 
     return hero_data
 
-def is_winning_player(radiant_win, player_slot):
-    """ Could just return the top most condition, but I feel the need to
-        validate the logic.
-    """
-    if (radiant_win and player_slot < 5) or \
-       (not radiant_win and player_slot >= 5):
-        return True
-
-    elif radiant_win and player_slot >= 5 or \
-       (not radiant_win and player_slot < 5):
-        return False
-
-    else:
-        raise Exception('Conditions for is_winning_player are invalid')
-
-def retrieve_sequence_num(row_data):
+def retrieve_sequence_num(row_data): # TODO
     return ''
 
-def save_hero_data(hero_data):
-    logging.info('Attempt to hero data to DB.')
-    insert_query = """
-        INSERT INTO hero_matches
-            ('winning_hero_1', 'winning_hero_2', 'winning_hero_3',
-             'winning_hero_4', 'winning_hero_5', 'losing_hero_1',
-             'losing_hero_2', 'losing_hero_3', 'losing_hero_4',
-             'losing_hero_5','match_num')
-        VALUES
-    """
-    values = ("(%(winning_hero_1)s, %(winning_hero_2)s, %(winning_hero_3)s, "
-              "%(winning_hero_4)s, %(winning_hero_5)s, %(losing_hero_1)s, "
-              "%(losing_hero_2)s, %(losing_hero_1)s, %(losing_hero_4)s, "
-              "%(losing_hero_5)s, '%(match_num)s')")
+# TODO Is match data still necessary?
+#def save_match_data(match_data):
+#    logging.info('Attempt to save match data to DB.')
+#    insert_query = """
+#        INSERT INTO 'match_history'
+#            ('match_num', 'sequence_num')
+#        VALUES
+#    """
+#    values = "('%(match_num)s', '%(sequence_num)s')"
+#    for value in match_data:
+#        insert_query += values % value + ', '
+#    _execute_sql(insert_query[:-2])
 
-    for value in hero_data:
-        insert_query += values % value + ', '
-    _execute_sql(insert_query[:-2])
+# TODO Use handler
+#def get_sequence_num():
+#    logging.info('Attempt to query for most recent sequence number.')
+#    select = 'SELECT * FROM most_recent_sequence_num'
+#    row = _execute_sql(select).fetchone()
+#    return row.sequence_num
 
-def save_match_data(match_data):
-    logging.info('Attempt to save match data to DB.')
-    insert_query = """
-        INSERT INTO 'match_history'
-            ('match_num', 'sequence_num')
-        VALUES
-    """
-    values = "('%(match_num)s', '%(sequence_num)s')"
-    for value in match_data:
-        insert_query += values % value + ', '
-    _execute_sql(insert_query[:-2])
+# TODO Use handler
+#def save_sequence_number(latest_sequence_num):
+#    logging.info('Attempt to save most recent sequence num to db')
+#    query = """
+#        INSERT INTO most_recent_sequence_num
+#            ('sequence_num')
+#        VALUES ('%s')
+#    """ % latest_sequence_num
+#    _execute_sql(query)
 
-def get_sequence_num():
-    logging.info('Attempt to query for most recent sequence number.')
-    select = 'SELECT * FROM most_recent_sequence_num'
-    row = _execute_sql(select).fetchone()
-    return row.sequence_num
-
-def save_sequence_number(latest_sequence_num):
-    logging.info('Attempt to save most recent sequence num to db')
-    query = """
-        INSERT INTO most_recent_sequence_num
-            ('sequence_num')
-        VALUES ('%s')
-    """ % latest_sequence_num
-    _execute_sql(query)
-
-def _execute_sql(query):
-    engine = create_engine('sqlite:///dota.db', echo=False)
-    connection = engine.connect()
-    result = connection.execute(query)
-    logging.info('Successfully ran query.')
-    return result
+# TODO Use handler
+#def _execute_sql(query):
+#    engine = create_engine('sqlite:///dota.db', echo=False)
+#    connection = engine.connect()
+#    result = connection.execute(query)
+#    logging.info('Successfully ran query.')
+#    return result
 
 if __name__ == '__main__':
     logging.basicConfig(filename='history.log', level=logging.INFO)
