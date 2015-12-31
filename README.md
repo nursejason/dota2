@@ -11,11 +11,11 @@ This API driven application is intended to use public information to assist in t
   - Finally a UI needs to be created in order for users to consume the service.
 
 - Includes:
-  - 1. Script to store match data. Runs every 30s
+  - 1. Script to store hero win/loss relation data. Runs every 30-45s
     - history.py
   - 2. Script to store hero data. Runs every day
     - hero_dump.py
-  - 3. Script to generate win-loss-relations. Runs every day
+  - ~~3. Script to generate win-loss-relations. Runs every day~~
   - 4. Generate API to pull win-loss-relations
   - 5. Create UI Component
 
