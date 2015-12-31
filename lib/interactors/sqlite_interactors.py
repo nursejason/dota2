@@ -30,7 +30,6 @@ class HeroesSqlInteractor(SqlInteractor):
         values = """(%(id)s, '%(name)s')"""
         for value in heroes:
             insert_query += values % value + ', '
-            print insert_query
         self.execute_query(insert_query[:-2])
 
 class MatchSqlInteractor(SqlInteractor):
