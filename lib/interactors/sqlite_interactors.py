@@ -8,7 +8,7 @@ class SqlInteractor(object):
         self.engine_connect()
 
     def engine_connect(self):
-        engine = create_engine('sqlite:///dota.db', echo=False)
+        engine = create_engine('sqlite:///../db/dota.db', echo=False)
         self.connection = engine.connect()
 
     def execute_query(self, query):
@@ -17,8 +17,21 @@ class SqlInteractor(object):
 
 class HeroesSqlInteractor(SqlInteractor):
     """ Interacts with Heroes SQL table """
+    def __init__(self):
+        super(HeroesSqlInteractor, self).__init__()
+
     def insert_heroes_to_heroes(self, heroes):
-        pass
+        insert_query = """
+        INSERT INTO heroes_table
+            ('id', 'name')
+        VALUES
+        """
+
+        values = """(%(id)s, '%(name)s')"""
+        for value in heroes:
+            insert_query += values % value + ', '
+            print insert_query
+        self.execute_query(insert_query[:-2])
 
 class MatchSqlInteractor(SqlInteractor):
     """ Interacts with Match history SQL table """
