@@ -1,11 +1,10 @@
 """ Queries for SQLite3 """
 
-
 ##############################################################################
 ######################### Heroes Win / Loss Queries ##########################
 ##############################################################################
 
-CREATE_HEROES_WIN_LOSS = """
+CREATE_HEROES_WIN_LOSS_TABLE = """
     CREATE TABLE
         heroes_win_loss
         (
@@ -54,7 +53,7 @@ UPDATE_HEROES_LOSS = """
 ########################### Match History Queries ############################
 ##############################################################################
 
-CREATE_MATCH_HISTORY_QUERY = """
+CREATE_MATCH_HISTORY_TABLE = """
     CREATE TABLE
         match_history
         (
@@ -76,19 +75,12 @@ CREATE_SEQUENCE_NUM_TABLE = """
         )
 """
 
-INSERT_STARTING_SEQUENCE_NUMBER = """
-    INSERT INTO most_recent_sequence_num
-    (
-        sequence_num varchar(24) PRIMARY KEY
-    )
-"""
-
 ##############################################################################
 ############################ Heroes Table Queries ############################
 ##############################################################################
 
 CREATE_HEROES_TABLE = """
-    heroes_table
+    CREATE TABLE heroes_table
     (
         id int PRIMARY KEY,
         name varchar(24)
