@@ -20,42 +20,14 @@ class HeroesSqlInteractor(SqlInteractor):
     def insert_heroes_to_heroes(self, heroes):
         pass
 
-class MatchSqlInteractor(SqlInteractor):
+class WinLossSqlInteractor(SqlInteractor):
     """ Interacts with Match history SQL table """
     def __init__(self):
-        super(MatchSqlInteractor, self).__init__()
+        super(WinLossSqlInteractor, self).__init__()
 
-    def insert_hero_match_data(self, hero_data):
-        """ Format query and values for match history
-            Input: hero_data -> ...
+    def save_relations(self, relations):
+        """ Accepts a list of dictionaries containing:
+            hero_1_id, hero_2_id, hero_1_win
+            Converts each one to an appropriate SQL query and updates DB.
         """
-        insert_query = """
-            INSERT INTO hero_matches
-                ('winning_hero_1', 'winning_hero_2', 'winning_hero_3',
-                 'winning_hero_4', 'winning_hero_5', 'losing_hero_1',
-                 'losing_hero_2', 'losing_hero_3', 'losing_hero_4',
-                 'losing_hero_5','match_num')
-            VALUES
-        """
-        values = ("(%(winning_hero_1)s, %(winning_hero_2)s, %(winning_hero_3)s, "
-                  "%(winning_hero_4)s, %(winning_hero_5)s, %(losing_hero_1)s, "
-                  "%(losing_hero_2)s, %(losing_hero_1)s, %(losing_hero_4)s, "
-                  "%(losing_hero_5)s, '%(match_num)s')")
-
-        for value in hero_data:
-            insert_query += values % value + ', '
-        self.execute_query(insert_query[:-2])
-
-    def insert_match_history(self, match_data):
-        """ Inserts match + sequence number into match_history table
-            Input: match_data -> ...
-        """
-        insert_query = """
-            INSERT INTO 'match_history'
-                ('match_num', 'sequence_num')
-            VALUES
-        """
-        values = "('%(match_num)s', '%(sequence_num)s')"
-        for value in match_data:
-            insert_query += values % value + ', '
-        self.execute_query(insert_query[:-2])
+        pass
