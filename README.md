@@ -2,7 +2,7 @@
 
 This API driven application is intended to use public information to assist in the DotA draft screen.
 
-##### Step 1. Basic counterpicking
+##### v1. Basic counterpicking
 - Enter in any number of heroes and retrieve counterpick information.
   - Match data needs to be stored with all ten heroes and winning team.
   - Hero data needs to be stored with all heroes, names, and id's
@@ -12,15 +12,25 @@ This API driven application is intended to use public information to assist in t
 
 - Includes:
   - 1. Script to store hero win/loss relation data. Runs every 30-45s
-    - history.py
-  - 2. Script to store hero data. Runs every day
+    - history.py # TODO should rename
+  - 2. Script to store hero data. Runs every day # Done
     - hero_dump.py
-  - ~~3. Script to generate win-loss-relations. Runs every day~~
-  - 4. Generate API to pull win-loss-relations
+  - ~~3. Script to generate win-loss-relations. Runs every day~~ # Swapped to 1.
+  - 4. Generate back-end for UI component
   - 5. Create UI Component
 
-- Complete:
-  - 1, but needs refactoring
+##### Step v1.1 Sorting and filtering on UI
+- Be able to filter and sort by ranged, carry, etc based on role required.
+- Be able to search for hero name to find counter rating
+
+- Includes:
+  - Adding role to Hero DB
+  - Add search functionality to UI when picking and also when looking at counters
+  - Add filters and sorting drop downs to UI
+
+##### Step ??. Search Engine Optimization
+
+##### Step ??. Monetize
 
 ##### Step 2. Team composition
 - Pull hero information from DotA website. Balance a team based on that information.
@@ -46,23 +56,9 @@ This API driven application is intended to use public information to assist in t
 - Recommended item use against enemy heroes.
 - Recommended item use that goes well with your team.
 
-##### Step ??. Front end
-- Create the UI
-
 ##### Step ??. Mobile platform
 
 ##### Step ??. Input your team
 
-##### Step ??. Sorting and filtering
-- Be able to filter and sort by ranged, carry, etc based on role required.
-- Be able to search for hero name to find counter rating
-
 ##### Step ??. Advanced team composition
 - Ex. User desires a pushing team, and therefore the team comp allows for additional pushing in order to become balanced.
-
-##### Step ??. Search Engine Optimization
-
-##### Step ??. Monetize
-
-### Questions:
-- Where is the logic for this? Is it all front end? Easy to steal. Submission API driven? Then what about the app?
