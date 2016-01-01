@@ -1,6 +1,11 @@
 """ Interactor to SQLite DB """
 
+import os
+import sys
 from sqlalchemy import create_engine
+
+sys.path.insert(0, os.path.realpath(os.path.dirname(__file__)) + '/../../lib')
+from db.sqlite_queries import INSERT_HEROES
 
 class SqlInteractor(object):
     """ Base SQL Interactor Object """
@@ -8,7 +13,7 @@ class SqlInteractor(object):
         self.engine_connect()
 
     def engine_connect(self):
-        engine = create_engine('sqlite:///../db/dota.db', echo=False)
+        engine = create_engine('sqlite:///dota.db', echo=False)
         self.connection = engine.connect()
 
     def execute_query(self, query):
@@ -21,12 +26,7 @@ class HeroesSqlInteractor(SqlInteractor):
         super(HeroesSqlInteractor, self).__init__()
 
     def insert_heroes_to_heroes(self, heroes):
-        insert_query = """
-        INSERT INTO heroes_table
-            ('id', 'name')
-        VALUES
-        """
-
+        insert_query = INSERT_HEROES
         values = """(%(id)s, '%(name)s')"""
         for value in heroes:
             insert_query += values % value + ', '
