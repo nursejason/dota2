@@ -1,8 +1,34 @@
 """ Business logic layer """
+_VALID_LOBBY_TYPES = [0, 6, 7]
+
+def is_failed_history_request(match_history):
+    if match_history['result']['status'] == 1:
+        return False
+    else:
+        return True
+
+def is_match_valid(match):
+    """ Run through a list of tests to determine if match is valid.
+        Invalid matches return InvalidMatchException
+    """
+    if match['lobby_type'] not in _VALID_LOBBY_TYPES:
+        InvalidMatchException('Invalid lobby type: ' % match['lobby_type'])
+    if match['duration'] < 900:
+        InvalidMatchException('Invalid match duration: ' % match['duration'])
+    if match['human_players'] != 10:
+        InvalidMatchException('Not enough hoomans in match.')
 
 def generate_match_relations(matches):
+    """ Generates appropriate match relations and checks for valid match data.
+    """
     hero_relations = []
     for match in matches:
+        try:
+            is_match_valid(match)
+        except InvalidMatchException, invalid_match:
+            #logger.warning(invalid_match)
+            continue
+
         hero_relations.extend(generate_match_hero_relations(
             match['players'], match['radiant_win']))
     return hero_relations
@@ -48,3 +74,6 @@ def _create_hero_relation(hero_1_id, hero_2_id, hero_1_win):
     relation = {'hero_1_id': hero_1_id, 'hero_2_id': hero_2_id,
                 'hero_1_win': hero_1_win}
     return relation
+
+class InvalidMatchException(Exception):
+    pass

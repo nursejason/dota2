@@ -33,21 +33,22 @@ INSERT_HEROES_WIN_LOSS = """
         ('%s', '%s', 0, 0, 0)
 """
 
+_WHERE_HEROES_RELATION = """
+    WHERE hero_1_id = %(hero_1_id)s
+      AND hero_2_id = %(hero_2_id)s
+"""
+
 UPDATE_HEROES_WIN = """
     UPDATE heroes_win_loss
     SET num_games = num_games + 1,
         hero_1_wins = hero_1_wins + 1
-    WHERE hero_1_id = %s
-      AND hero_2_id = %s
-"""
+""" + _WHERE_HEROES_RELATION
 
 UPDATE_HEROES_LOSS = """
     UPDATE heroes_win_loss
     SET num_games = num_games + 1,
         hero_1_losses = hero_1_losses + 1
-    WHERE hero_1_id = %s
-      AND hero_2_id = %s
-"""
+""" + _WHERE_HEROES_RELATION
 
 ##############################################################################
 ########################### Match History Queries ############################
@@ -73,6 +74,18 @@ CREATE_SEQUENCE_NUM_TABLE = """
         (
             sequence_num varchar(12) PRIMARY KEY
         )
+"""
+
+GET_SEQUENCE_NUM = """
+    SELECT sequence_num
+    FROM most_recent_sequence_num
+    ORDER BY modified_date asc
+    LIMIT 1
+"""
+
+UPDATE_SEQUENCE_NUM = """
+    UPDATE most_recent_sequence_num
+    SET sequence_num = %s
 """
 
 ##############################################################################
