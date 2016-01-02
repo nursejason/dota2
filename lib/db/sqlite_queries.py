@@ -99,3 +99,10 @@ CREATE_HEROES_TABLE = """
         name varchar(24)
     )
 """
+
+
+INSERT_HEROES = """
+    INSERT INTO heroes_table
+        ('id', 'name')
+    VALUES
+"""

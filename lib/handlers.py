@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, os.path.realpath(os.path.dirname(__file__)) + '/../lib')
 
-from domain import generate_match_relations
+from domain import is_failed_history_request, generate_match_relations
 
 #  TODO add logging
 def process_matches_by_sequence_num(sequence_num, interactors):
@@ -12,6 +12,9 @@ def process_matches_by_sequence_num(sequence_num, interactors):
         then stores the relations.
     """
     match_history = interactors.api_interactor.call_steam(sequence_num)
+    if is_failed_history_request:
+        raise Exception('Invalid data status on history request')
+
     relations = generate_match_relations(match_history['matches'])
     interactors.storage_interactor.save_relations(relations)
     return retrieve_last_sequence_number(match_history)
@@ -28,3 +31,10 @@ def get_sequence_number(storage_interactor):
 
 def set_sequence_number(storage_interactor, sequence_number):
     storage_interactor.set_sequence_number(sequence_number)
+
+def parse_heroes(data):
+    heroes = []
+    for hero in data['result']['heroes']:
+        parsed_hero = hero['name'].split('npc_dota_hero_')[1].replace('_', " ")
+        heroes.append({'id':hero['id'], 'name':parsed_hero})
+    return heroes
