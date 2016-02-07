@@ -55,8 +55,6 @@ from interactors.sqlite_interactors import WinLossInteractor, SequenceInteractor
 from handlers import (
     process_matches_by_sequence_num, get_sequence_number, set_sequence_number)
 
-VALID_LOBBY_TYPES = [0, 6, 7]
-
 def main():
     """
     1. Grab the most recent sequence number in the table.
@@ -67,8 +65,8 @@ def main():
     """
     interactors = Context()
     interactors.api_interactor = GetMatchHistoryRequest(logging)
-    interactors.storage_interactor = WinLossInteractor()
-    interactors.sequence_interactor = SequenceInteractor()
+    interactors.storage_interactor = WinLossInteractor(logging)
+    interactors.sequence_interactor = SequenceInteractor(logging)
 
     while True:
         sequence_number = get_sequence_number(interactors.sequence_interactor)
