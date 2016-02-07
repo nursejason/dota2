@@ -14,8 +14,9 @@ from db.sqlite_queries import (
 
 class SqlInteractor(object):
     """ Base SQL Interactor Object """
-    def __init__(self):
+    def __init__(self, logger):
         self.engine_connect()
+        self.logger = logger
 
     def engine_connect(self):
         engine = create_engine('sqlite:///dota.db', echo=False)
@@ -27,8 +28,8 @@ class SqlInteractor(object):
 
 class HeroesSqlInteractor(SqlInteractor):
     """ Interacts with Heroes SQL table """
-    def __init__(self):
-        super(HeroesSqlInteractor, self).__init__()
+    def __init__(self, logger):
+        super(HeroesSqlInteractor, self).__init__(logger)
 
     def insert_heroes_to_heroes(self, heroes):
         insert_query = INSERT_HEROES
@@ -38,8 +39,8 @@ class HeroesSqlInteractor(SqlInteractor):
         self.execute_query(insert_query[:-2])
 
 class SequenceInteractor(SqlInteractor):
-    def __init__(self):
-        super(SequenceInteractor, self).__init__()
+    def __init__(self, logger):
+        super(SequenceInteractor, self).__init__(logger)
 
     def get_sequence_number(self):
         self.execute_query(GET_SEQUENCE_NUM)
@@ -49,8 +50,8 @@ class SequenceInteractor(SqlInteractor):
 
 class WinLossInteractor(SqlInteractor):
     """ Interacts with Match history SQL table """
-    def __init__(self):
-        super(WinLossInteractor, self).__init__()
+    def __init__(self, logger):
+        super(WinLossInteractor, self).__init__(logger)
 
     def insert_relation(self, hero_id_1, hero_id_2):
         self.execute_query(INSERT_HEROES_WIN_LOSS % (hero_id_1, hero_id_2))
