@@ -2,15 +2,21 @@
 
 import os
 import sys
+
 from sqlalchemy import create_engine
 
-sys.path.insert(0, os.path.realpath(os.path.dirname(__file__)) + '/../../lib')
-from db.sqlite_queries import INSERT_HEROES
+sys.path.insert(0, os.path.realpath(os.path.dirname(__file__)) +
+                '/../../lib')
+
+from db.sqlite_queries import (
+    INSERT_HEROES_WIN_LOSS, UPDATE_HEROES_WIN, UPDATE_HEROES_LOSS,
+    GET_SEQUENCE_NUM, UPDATE_SEQUENCE_NUM, INSERT_HEROES)
 
 class SqlInteractor(object):
     """ Base SQL Interactor Object """
-    def __init__(self):
+    def __init__(self, logger):
         self.engine_connect()
+        self.logger = logger
 
     def engine_connect(self):
         engine = create_engine('sqlite:///dota.db', echo=False)
@@ -22,8 +28,8 @@ class SqlInteractor(object):
 
 class HeroesSqlInteractor(SqlInteractor):
     """ Interacts with Heroes SQL table """
-    def __init__(self):
-        super(HeroesSqlInteractor, self).__init__()
+    def __init__(self, logger):
+        super(HeroesSqlInteractor, self).__init__(logger)
 
     def insert_heroes_to_heroes(self, heroes):
         insert_query = INSERT_HEROES
@@ -32,42 +38,44 @@ class HeroesSqlInteractor(SqlInteractor):
             insert_query += values % value + ', '
         self.execute_query(insert_query[:-2])
 
-class MatchSqlInteractor(SqlInteractor):
+class SequenceInteractor(SqlInteractor):
+    def __init__(self, logger):
+        super(SequenceInteractor, self).__init__(logger)
+
+    def get_sequence_number(self):
+        self.execute_query(GET_SEQUENCE_NUM)
+
+    def set_sequence_number(self, sequence_number):
+        self.execute_query(UPDATE_SEQUENCE_NUM % sequence_number)
+
+class WinLossInteractor(SqlInteractor):
     """ Interacts with Match history SQL table """
-    def __init__(self):
-        super(MatchSqlInteractor, self).__init__()
+    def __init__(self, logger):
+        super(WinLossInteractor, self).__init__(logger)
 
-    def insert_hero_match_data(self, hero_data):
-        """ Format query and values for match history
-            Input: hero_data -> ...
-        """
-        insert_query = """
-            INSERT INTO hero_matches
-                ('winning_hero_1', 'winning_hero_2', 'winning_hero_3',
-                 'winning_hero_4', 'winning_hero_5', 'losing_hero_1',
-                 'losing_hero_2', 'losing_hero_3', 'losing_hero_4',
-                 'losing_hero_5','match_num')
-            VALUES
-        """
-        values = ("(%(winning_hero_1)s, %(winning_hero_2)s, %(winning_hero_3)s, "
-                  "%(winning_hero_4)s, %(winning_hero_5)s, %(losing_hero_1)s, "
-                  "%(losing_hero_2)s, %(losing_hero_1)s, %(losing_hero_4)s, "
-                  "%(losing_hero_5)s, '%(match_num)s')")
+    def insert_relation(self, hero_id_1, hero_id_2):
+        self.execute_query(INSERT_HEROES_WIN_LOSS % (hero_id_1, hero_id_2))
 
-        for value in hero_data:
-            insert_query += values % value + ', '
-        self.execute_query(insert_query[:-2])
+    def update_relations(self, relations):
+        """ Accepts a list of dictionaries containing:
+            hero_1_id, hero_2_id, hero_1_win
+            Converts each one to an appropriate SQL query and updates DB.
+        """
+        update_query = self._generate_relations_sql(relations)
+        self.execute_query(update_query)
 
-    def insert_match_history(self, match_data):
-        """ Inserts match + sequence number into match_history table
-            Input: match_data -> ...
+    def _generate_relations_sql(self, relations):
+        """ Appends an update query string for each hero relation
+            and returns the overall query.
         """
-        insert_query = """
-            INSERT INTO 'match_history'
-                ('match_num', 'sequence_num')
-            VALUES
-        """
-        values = "('%(match_num)s', '%(sequence_num)s')"
-        for value in match_data:
-            insert_query += values % value + ', '
-        self.execute_query(insert_query[:-2])
+        query_string = ""
+        for relation in relations:
+            hero_1_win = relation['hero_1_win']
+            del relation['hero_1_win']
+            if hero_1_win:
+                query_string += UPDATE_HEROES_WIN % relation
+            else:
+                query_string += UPDATE_HEROES_LOSS % relation
+            query_string += " \n"
+
+        return query_string
