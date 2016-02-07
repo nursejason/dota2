@@ -1,8 +1,9 @@
 """ Business logic layer """
 _VALID_LOBBY_TYPES = [0, 6, 7]
+_SUCCESSFUL_MATCH_STATUS = 1
 
 def is_failed_history_request(match_history):
-    if match_history['result']['status'] == 1:
+    if match_history['result']['status'] == _SUCCESSFUL_MATCH_STATUS:
         return False
     else:
         return True
