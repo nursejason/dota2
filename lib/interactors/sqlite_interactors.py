@@ -5,7 +5,7 @@ import sys
 from sqlalchemy import create_engine
 
 sys.path.insert(0, os.path.realpath(os.path.dirname(__file__)) + '/../../lib')
-from db.sqlite_queries import INSERT_HEROES
+from db.sqlite_queries import INSERT_HEROES, INSERT_INITIAL_WIN_LOSS
 
 class SqlInteractor(object):
     """ Base SQL Interactor Object """
@@ -13,7 +13,7 @@ class SqlInteractor(object):
         self.engine_connect()
 
     def engine_connect(self):
-        engine = create_engine('sqlite:///dota.db', echo=False)
+        engine = create_engine('sqlite:///../db/dota.db', echo=False)
         self.connection = engine.connect()
 
     def execute_query(self, query):
@@ -31,6 +31,26 @@ class HeroesSqlInteractor(SqlInteractor):
         for value in heroes:
             insert_query += values % value + ', '
         self.execute_query(insert_query[:-2])
+
+    def insert_initial_win_loss(self):
+        insert_query = INSERT_INITIAL_WIN_LOSS
+        values = []
+        patch = "1" # TODO: Need to grab version numba
+        rows = 100 # Only insert 100 rows at a time
+
+        for hero_1 in xrange(1,125):
+            if len(values) > rows:
+                query = insert_query + ",".join(values)
+                self.execute_query(query)
+                values = []
+
+            for hero_2 in xrange(1,125):
+                if hero_2 > hero_1:
+                    values.append("(%i, %i, 0, 0, 0, '%s')" %
+                                  (hero_1,hero_2,patch))
+        query = insert_query + ",".join(values)
+        self.execute_query(query)
+
 
 class MatchSqlInteractor(SqlInteractor):
     """ Interacts with Match history SQL table """

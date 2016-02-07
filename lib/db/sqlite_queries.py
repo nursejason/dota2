@@ -93,3 +93,10 @@ INSERT_HEROES = """
         ('id', 'name')
     VALUES
 """
+
+
+INSERT_INITIAL_WIN_LOSS = """
+    INSERT INTO 'heroes_win_loss'
+    (hero_1_id, hero_2_id, num_games, hero_1_wins, hero_1_losses, patch)
+    VALUES
+"""
